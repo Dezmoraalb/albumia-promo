@@ -252,6 +252,27 @@ h3 {
     font-weight: 600;
     color: var(--color-text);
     letter-spacing: 0.05em;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    transition: color var(--transition-base), opacity var(--transition-base);
+}
+
+.logo:hover {
+    color: var(--color-cta);
+}
+
+.logo-inst {
+    width: 22px;
+    height: 22px;
+    opacity: 0.5;
+    transition: opacity var(--transition-base), color var(--transition-base), transform var(--transition-base);
+}
+
+.logo:hover .logo-inst {
+    opacity: 1;
+    transform: scale(1.1);
 }
 
 .nav-links {
