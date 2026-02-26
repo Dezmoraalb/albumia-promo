@@ -26,7 +26,7 @@
         !function (f, b, e, v, n, t, s) {
             if (f.fbq) return; n = f.fbq = function () {
                 n.callMethod ?
-                n.callMethod.apply(n, arguments) : n.queue.push(arguments)
+                    n.callMethod.apply(n, arguments) : n.queue.push(arguments)
             };
             if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0';
             n.queue = []; t = b.createElement(e); t.async = !0;
@@ -586,34 +586,96 @@
 
             const BASE_PRICE = 1480;
 
+            const deliveryForm = document.getElementById('deliveryForm');
+            const paymentRadios = document.querySelectorAll('input[name="payment-type"]');
+            const codNotice = document.getElementById('codNotice');
+            const paymentSecureBadge = document.getElementById('paymentSecureBadge');
+            const badgeLabel = paymentSecureBadge.querySelector('span');
+
+            const customerName = document.getElementById('customerName');
+            const customerPhone = document.getElementById('customerPhone');
+            const customerCity = document.getElementById('customerCity');
+            const customerWarehouse = document.getElementById('customerWarehouse');
+
             function updatePriceAndLink() {
                 let total = BASE_PRICE;
                 let hasText = optText.checked;
                 let hasPhoto = optPhoto.checked;
+                let activePayment = document.querySelector('input[name="payment-type"]:checked').value;
 
                 if (hasText) total += parseInt(optText.value);
                 if (hasPhoto) total += parseInt(optPhoto.value);
 
                 totalPriceEl.textContent = total.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ");
 
-                // Update WayForPay Links based on selection
-                modalPayBtn.textContent = "Сплатити";
-                modalPayBtn.onclick = null;
+                if (activePayment === 'online') {
+                    deliveryForm.style.display = 'none';
+                    codNotice.style.display = 'none';
+                    paymentSecureBadge.style.opacity = '1';
+                    badgeLabel.textContent = "Безпечна оплата WayForPay";
+                    modalPayBtn.textContent = "Сплатити онлайн";
 
-                if (hasText && hasPhoto) {
-                    // Набір + фото + власний надпис (1720 грн)
-                    modalPayBtn.href = "https://secure.wayforpay.com/button/b3ae535fd4d06";
-                } else if (hasPhoto && !hasText) {
-                    // Подарунковий набір + друк фото 10 шт (1600 грн)
-                    modalPayBtn.href = "https://secure.wayforpay.com/button/be1cb7804ef79";
-                } else if (!hasPhoto && hasText) {
-                    // Подарунковий набір + власний надпис (1600 грн)
-                    modalPayBtn.href = "https://secure.wayforpay.com/button/b6cc424bf5f96";
+                    if (hasText && hasPhoto) {
+                        modalPayBtn.href = "https://secure.wayforpay.com/button/b3ae535fd4d06";
+                    } else if (hasPhoto && !hasText) {
+                        modalPayBtn.href = "https://secure.wayforpay.com/button/be1cb7804ef79";
+                    } else if (!hasPhoto && hasText) {
+                        modalPayBtn.href = "https://secure.wayforpay.com/button/b6cc424bf5f96";
+                    } else {
+                        modalPayBtn.href = "https://secure.wayforpay.com/button/b23f9356b272f";
+                    }
                 } else {
-                    // Просто набір (1480 грн)
-                    modalPayBtn.href = "https://secure.wayforpay.com/button/b23f9356b272f";
+                    deliveryForm.style.display = 'block';
+                    codNotice.style.display = 'block';
+                    paymentSecureBadge.style.opacity = '0.5';
+                    badgeLabel.textContent = "Оплата при отриманні";
+                    modalPayBtn.textContent = "Замовити";
+
+                    updateMessengerLink();
                 }
             }
+
+            function updateMessengerLink() {
+                const activePayment = document.querySelector('input[name="payment-type"]:checked').value;
+                if (activePayment !== 'cod') return;
+
+                const productName = modalTitle.textContent;
+                const options = [];
+                if (optText.checked) options.push("Власний надпис");
+                if (optPhoto.checked) options.push("Друк 10 фото");
+
+                const optsStr = options.length > 0 ? ` + (${options.join(', ')})` : "";
+                const total = totalPriceEl.textContent;
+
+                const name = customerName.value.trim();
+                const phone = customerPhone.value.trim();
+                const city = customerCity.value.trim();
+                const warehouse = customerWarehouse.value.trim();
+
+                let message = `Доброго дня! Хочу замовити бокс «${productName}»${optsStr}.\n`;
+                message += `Сума: ${total} ₴\n`;
+                message += `Спосіб оплати: Післяплата\n\n`;
+                message += `Дані для відправки:\n`;
+                message += `ПІП: ${name || '____'}\n`;
+                message += `Тел: ${phone || '____'}\n`;
+                message += `Місто: ${city || '____'}\n`;
+                message += `Відділення: ${warehouse || '____'}`;
+
+                const encodedMessage = encodeURIComponent(message);
+                modalPayBtn.href = `https://t.me/photodruk_online?text=${encodedMessage}`;
+            }
+
+            paymentRadios.forEach(radio => {
+                radio.addEventListener('change', () => {
+                    document.querySelectorAll('.payment-method-card').forEach(card => card.classList.remove('active'));
+                    radio.closest('.payment-method-card').classList.add('active');
+                    updatePriceAndLink();
+                });
+            });
+
+            [customerName, customerPhone, customerCity, customerWarehouse].forEach(el => {
+                el.addEventListener('input', updateMessengerLink);
+            });
 
             function updateGallery() {
                 if (currentImagesList.length === 0) return;
@@ -750,13 +812,52 @@
                     </label>
                 </div>
 
+                <!-- Payment Methods -->
+                <div class="payment-methods">
+                    <p class="payment-methods-title">Спосіб оплати:</p>
+                    <div class="payment-methods-grid">
+                        <label class="payment-method-card active">
+                            <input type="radio" name="payment-type" value="online" checked>
+                            <span class="payment-method-icon">💳</span>
+                            <span class="payment-method-text">Оплата онлайн</span>
+                        </label>
+                        <label class="payment-method-card">
+                            <input type="radio" name="payment-type" value="cod">
+                            <span class="payment-method-icon">📦</span>
+                            <span class="payment-method-text">Післяплата</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Delivery Form (Hidden by default) -->
+                <div class="delivery-form" id="deliveryForm" style="display: none;">
+                    <p class="delivery-form-title">Дані для відправки (Нова Пошта):</p>
+                    <div class="form-group">
+                        <input type="text" id="customerName" class="form-input" placeholder="ПІП отримувача">
+                    </div>
+                    <div class="form-group">
+                        <input type="tel" id="customerPhone" class="form-input" placeholder="Номер телефону">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="customerCity" class="form-input" placeholder="Місто / Населений пункт">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="customerWarehouse" class="form-input"
+                            placeholder="№ Відділення або Поштомату">
+                    </div>
+                </div>
+
                 <div class="product-modal-footer">
                     <div class="product-modal-total">
                         <span>Разом:</span>
                         <span class="product-modal-total-price"><span id="totalPrice">1 480</span> ₴</span>
                     </div>
                     <a href="#" class="btn btn-primary" id="modalPayBtn" target="_blank" rel="noopener">Сплатити</a>
-                    <div class="secure-checkout">
+                    <div id="codNotice" class="cod-notice"
+                        style="display: none; font-size: 0.8rem; color: var(--color-text-muted); text-align: center; margin-bottom: 5px;">
+                        * Після натискання вас переадресує до менеджера з вашими даними
+                    </div>
+                    <div class="secure-checkout" id="paymentSecureBadge">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd"
                                 d="M10 1a4.5 4.5 0 00-4.5 4.5V9H5a2 2 0 00-2 2v6a2 2 0 002 2h10a2 2 0 002-2v-6a2 2 0 00-2-2h-.5V5.5A4.5 4.5 0 0010 1zm3 8V5.5a3 3 0 10-6 0V9h6z"

@@ -1368,3 +1368,129 @@ h3 {
         padding: var(--space-lg);
     }
 }
+
+/* --- Added Payment & Delivery Styles --- */
+.payment-methods {
+    margin-bottom: var(--space-lg);
+}
+
+.payment-methods-title {
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: var(--color-text);
+}
+
+.payment-methods-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.payment-method-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    border: 1.5px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.payment-method-card input {
+    display: none;
+}
+
+.payment-method-icon {
+    font-size: 1.5rem;
+    margin-bottom: 4px;
+}
+
+.payment-method-text {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--color-text-muted);
+}
+
+.payment-method-card.active {
+    border-color: var(--color-cta);
+    background: rgba(184, 82, 94, 0.03);
+}
+
+.payment-method-card.active .payment-method-text {
+    color: var(--color-cta);
+}
+
+.delivery-form {
+    background: #f9f7f6;
+    padding: 15px;
+    border-radius: var(--radius-sm);
+    margin-bottom: var(--space-lg);
+    border: 1px dashed var(--color-primary);
+    animation: fadeInSlide 0.3s ease-out;
+}
+
+@keyframes fadeInSlide {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.delivery-form-title {
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--color-cta);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.form-group {
+    margin-bottom: 8px;
+}
+
+.form-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    background: #fff;
+    transition: border-color var(--transition-fast);
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--color-primary-dark);
+}
+
+.cod-notice {
+    animation: pulseNotice 2s infinite;
+}
+
+@keyframes pulseNotice {
+    0% {
+        opacity: 0.7;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0.7;
+    }
+}
+
+#paymentSecureBadge {
+    transition: opacity 0.3s ease;
+}
